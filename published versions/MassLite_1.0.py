@@ -23,7 +23,9 @@ Dependencies:
 - numpy, pandas, matplotlib, seaborn, tkinter, pyimzML, pymzml, umap-learn, sklearn, scipy
 """
 
-
+# ─────────────────────────────────────────────
+# LOADING DEPENDENCIES
+# ─────────────────────────────────────────────
 
 import numpy as np
 import copy
@@ -51,10 +53,13 @@ from scipy.signal import argrelextrema
 from sklearn.cluster import KMeans
 import umap
 
+# ─────────────────────────────────────────────
+# GLOBAL VARIABLES AND INITIALIZATION
+# ─────────────────────────────────────────────
+
 global_slope = 1000000/log10(np.e)
 global_intercept = -(log10(50)*global_slope)
 global_st = time.time()
-# global file_imzML_path
 file_imzML_path = ''
 mass_threshold = 5
 noise_threshold = 3000
@@ -79,12 +84,16 @@ trimmed_table = None
 main_window = tk.Tk()
 main_window.title("MassLite GUI")
 
-# function part
+# ─────────────────────────────────────────────
+# FUNCTIONS
+# ─────────────────────────────────────────────
 
+# timing function to track working status
 def timing_test(kw="this"):
     en = time.time()
     print("till ",kw," step takes",en - global_st)
 
+# read data from imzML files (for imaging use if necessary)
 def read_msi_data(p,thresh = 3000,ppm=5):
     a = max(p.coordinates)
     xmax,ymax,zmax = a
@@ -99,6 +108,7 @@ def read_msi_data(p,thresh = 3000,ppm=5):
         peaks_all.append(peaks_current)
     return(peaks_all)
 
+# read data from mzML files
 def read_ms_data(p,thresh = 3000,ppm=5):
     p1 = []
     org_n_scan = len(p0)
@@ -110,6 +120,9 @@ def read_ms_data(p,thresh = 3000,ppm=5):
         p1.append(peaks_current)
     return(p1)
 
+# turn profile spectra into centroided spectra for processing
+# when collapse = True, use the highest peak to represent the height of entire peak
+# when collapse = False, use a fitting method to locate the height of peak
 def combine_peaks(mzs,ints,mzr=[],ppm=5,collapse = False):
     if mzr == []: mzr = rela_transform(mzs)
     data = np.column_stack((mzs,ints,mzr))
@@ -131,17 +144,19 @@ def combine_peaks(mzs,ints,mzr=[],ppm=5,collapse = False):
 
     return peaks
 
+# transform linear mass difference by Da into relative mass difference by ppm
 def rela_transform(mzs):
     if isinstance(mzs, (float,int)):
         # If the input is an integer, perform some operations for single integer input
-        result = log10(mzs) * global_slope + global_intercept  # Example operation, you can replace this with your desired logic
+        result = log10(mzs) * global_slope + global_intercept
     elif isinstance(mzs, (list, np.ndarray)):
         # If the input is a list or a NumPy array, perform some operations for array input
         arr = np.array(mzs)  # Convert the input to a NumPy array for uniform processing
-        result = np.log10(arr)* global_slope + global_intercept  # Example operation, you can replace this with your desired logic
+        result = np.log10(arr)* global_slope + global_intercept
         
     return result
 
+# undo transformation from linear mass difference by Da to relative mass difference by ppm
 def rela_transform_rev(mzr):
     if isinstance(mzr, (float,int)):
         result = pow(10,((mzr-global_intercept)/global_slope))
@@ -151,10 +166,12 @@ def rela_transform_rev(mzr):
         result = np.power(10,((mzr-global_intercept)/global_slope))
     return result
 
+# weighted average for peak merging when alignment is performed
 def weighted_avg (mzs,ints):
     produc = mzs*ints
     return(sum(produc)/sum(ints),sum(ints))
 
+# use polynomial fitting as quick approximation of gaussian fitting of peaks
 def three_point_2 (a,b,c):
     x = np.array((a[0],b[0],c[0]))
     y = np.array((a[1],b[1],c[1]))
@@ -178,6 +195,9 @@ def three_point_2 (a,b,c):
         mz = -z[1]/2/z[0]
         inten = z[2]-z[1]*z[1]/4/z[0]
     return (mz,inten)
+
+# use histogram of spectra with ML to quickly cluster different scans without supervision
+# highly efficient for spontaneous sampling process with potential clogged scans
 
 def classify_scans(p0,ncl=3):
     fixed_bin = np.arange(int(p0[0][0][1]//100),int(p0[0][-1][1]//100)+2)*100
@@ -207,6 +227,8 @@ def classify_scans(p0,ncl=3):
 
     return(int_log_label,tic_avg)
 
+# locate each cell by a potential biomarker, by default PC 34:1 [M+H]
+# when the biomarker intensity drop to 20% of local maximum, a cell is defined
 def locate_peaks(p,marker_range = [(760.40,760.70)]):
     global marker_i, peak_info
     peak_edge_thresh = float(Entry_bg_level.get())/100
@@ -686,7 +708,9 @@ def log_message(message):
     listbox_log.insert(tk.END, message)
     listbox_log.see(tk.END)
 
-# define GUI grid
+# ─────────────────────────────────────────────
+# MAIN GUI SETUP (Tkinter UI Components)
+# ─────────────────────────────────────────────
 
 label_imzML_path = tk.Label(main_window, text="Select imzML file")
 label_imzML_path.grid(row=0,column=0)
@@ -848,6 +872,3 @@ listbox_log.configure(yscrollcommand=scrollbar_log.set)
 
 main_window.mainloop()
 
-main_window.mainloop()
-
-print("end")
