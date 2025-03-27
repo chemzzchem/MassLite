@@ -2,6 +2,7 @@
 MassLite v1.0
 
 Author: Zhu Zou
+Email: xyqzouzhu@gmail.com
 Created for Single Cell Mass Spectrometry data pretreatment
 Specifically efficient for Single-probe SCMS data
 
