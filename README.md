@@ -55,4 +55,4 @@ Detail:
 
 License:
 -------------
-MassLite is licensed under Apache-2.0 license.
+MassLite is licensed under Apache-2.0 license. The code is provided as is with no warranty.
