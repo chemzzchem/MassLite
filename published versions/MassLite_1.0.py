@@ -57,6 +57,7 @@ import umap
 # GLOBAL VARIABLES AND INITIALIZATION
 # ─────────────────────────────────────────────
 
+# global variables for multiple functions, testing, etc.
 global_slope = 1000000/log10(np.e)
 global_intercept = -(log10(50)*global_slope)
 global_st = time.time()
@@ -198,7 +199,6 @@ def three_point_2 (a,b,c):
 
 # use histogram of spectra with ML to quickly cluster different scans without supervision
 # highly efficient for spontaneous sampling process with potential clogged scans
-
 def classify_scans(p0,ncl=3):
     fixed_bin = np.arange(int(p0[0][0][1]//100),int(p0[0][-1][1]//100)+2)*100
     fixed_bin[0]=0
@@ -286,7 +286,9 @@ def locate_peaks(p,marker_range = [(760.40,760.70)]):
     bg_region = find_bg_regions(peak_info)
     radio_in_cell.config(state=tk.NORMAL)
 
-
+# peak_info contains the boundary of cell regions
+# return either the beginning and ending of cell regions
+# or the beginning and ending of bg regions, which is also ending and beginning of cell regions
 def sort_regions(rg,IsCell = True):    
     if IsCell == True:
         rg[:,1]+=1
@@ -295,9 +297,11 @@ def sort_regions(rg,IsCell = True):
         mask = (rg[:,1]-rg[:,0]==0)
         return rg[~mask].astype(int)
 
+# from peak_info, extract the cell regions
 def find_peak_regions(peak_info):
     return (sort_regions(np.take(peak_info,(4,5),axis = 1),IsCell=True))
 
+# from peak_info, extract the bg regions
 def find_bg_regions(peak_info):
     peak_region_broad_st = np.take(peak_info,6,axis=1)
     peak_region_broad_en = np.take(peak_info,7,axis=1)
@@ -305,6 +309,8 @@ def find_bg_regions(peak_info):
     bg_region_en = np.append(peak_region_broad_st,len(marker_i))
     return(sort_regions(np.column_stack((bg_region_st,bg_region_en)),IsCell = False))
 
+# normalization of peaks for each scan
+# normalization factor is TIC by default
 def norm_peaks(p0,norm_range = [(0,10000)]):
     p = p0
     mz_min = 0
@@ -322,7 +328,9 @@ def norm_peaks(p0,norm_range = [(0,10000)]):
         norm_fa = norm_i[i]
         p[i][:,2]=p[i][:,2]/norm_fa
     return p
-    
+
+# perform peak alignment using the relative mass difference
+# thus update of distance matrix would be more intuitive
 def ms_alignment(data = p0,ppm=5):
     # initiating data array
     pixels = data
@@ -387,6 +395,9 @@ def ms_alignment(data = p0,ppm=5):
     checkbox_al.config(state=tk.NORMAL)
     return(data[:,:3])
 
+# peak with its maximum at the bg region is considered a bg peak and irrelavant to sample
+# peaks in bg region will be dropped from the table
+# to prevent false negative, the process is for aligned peaks
 def bg_removal(data,ratio=1):
     if checkbox_autobg_var.get()==1:
         bgscan_id = [num for start,end in bg_region for num in range(start,end)]
@@ -433,7 +444,7 @@ def bg_removal(data,ratio=1):
     print("done")
     return(data,peaks_in_bg)
 
-
+# filter data with a couple of thresholds to reduce noise
 def trim_data(data,missing_value = 2,int_tot_thresh = 0.0, int_max_thresh = 0.0):
 
     # missing value, total intensity, max intensity filters
@@ -473,6 +484,11 @@ def trim_data(data,missing_value = 2,int_tot_thresh = 0.0, int_max_thresh = 0.0)
     timing_test("alignment")
     return data2
 
+# ─────────────────────────────────────────────
+# MULTIPLE WAYS OF EXPORTATION
+# ─────────────────────────────────────────────
+
+# export unaligned data for each individual cells
 def raw_scan2cell(s):
     c = []
     for i in range(len(cell_region)):
@@ -484,6 +500,7 @@ def raw_scan2cell(s):
         c.append(single_cell)
     return c
 
+# export aligned data for each individual cells
 def aligned_scan2cell(s):
     c = np.zeros((0,3))
     for i in range(len(cell_region)):
@@ -496,6 +513,7 @@ def aligned_scan2cell(s):
         c=np.row_stack((c,single_cell))
     return c
 
+# export unaligned data for each scan, do not group into cells
 def exp_org_table(p,exp_file_path,datatype = 'scan'):
     max_rows = max(arr.shape[0] for arr in p)
     df_with_nan = [pd.DataFrame(np.vstack((arr[:,1:3], np.full((max_rows - arr.shape[0], 2), np.nan)))) for arr in p]
@@ -512,6 +530,7 @@ def exp_org_table(p,exp_file_path,datatype = 'scan'):
     df.to_csv(output_path, index=False)
     log_message(output_path + " exported.")
 
+# export aligned data for each scan, do not group into cells
 def exp_aligned_table(data,exp_file_path,datatype = 'scan'):
     p = data[:,0:3]
     df = pd.DataFrame(p, columns=[datatype, "mz", "Intensity"])
@@ -522,7 +541,10 @@ def exp_aligned_table(data,exp_file_path,datatype = 'scan'):
     pivot_df.to_csv(output_path)
     log_message(output_path + " exported.")
 
-# define actions
+# ─────────────────────────────────────────────
+# DEFINE ACTIONS FOR GUI INTERACTIONS
+# DECISION TREE INCLUDED
+# ─────────────────────────────────────────────
 
 def on_browse_button_click():
     global file_imzML_path 
@@ -700,10 +722,12 @@ def on_combobox_group_select(event):
 def on_radio_exp_select():
     selection = radio_exp_var.get()
 
+# for advanced users/debugging, you may enter a breakpoint here to check metadata
 def on_debug_button_click():
     log_message("Debug mode started.")
     log_message("Debug mode ended")
 
+# leave a log message in the GUI for the users
 def log_message(message):
     listbox_log.insert(tk.END, message)
     listbox_log.see(tk.END)
@@ -868,7 +892,7 @@ scrollbar_log = tk.Scrollbar(main_window, command=listbox_log.yview)
 scrollbar_log.grid(row=17, column=11, pady=10, rowspan=5,sticky="ns")
 listbox_log.configure(yscrollcommand=scrollbar_log.set)
 
-# main start from here
+# all initialization completed, main start from here
 
 main_window.mainloop()
 
