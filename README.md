@@ -36,9 +36,9 @@ If you use MassLite in your research, please cite:
 MassLite is written in **Python 3.11** and requires the following packages:
 
 - `numpy`, `pandas`, `matplotlib`, `seaborn`
-- `tkinter` (GUI framework)
-- `pyimzML`, `pymzml` (data import)
-- `scipy`, `sklearn`, `umap-learn` (analysis and clustering)
+- `tkinter` 
+- `pyimzML`, `pymzml`
+- `scipy`, `sklearn`, `umap-learn` 
 
 Usage:
 -------------
