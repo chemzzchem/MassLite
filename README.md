@@ -1,29 +1,44 @@
 # MassLite
 
-MassLite v1.0
+**MassLite v1.0**  
 
-Author: Zhu Zou 
+Author: Zhu Zou  
 
 Email: xyqzouzhu@gmail.com
 
-Description:
--------------
-MassLite is a GUI application for processing mass spectrometry data files, specifically compatible with SCMS data without chromatographic separation. It enables peak alignment, cell segmentation, background removal, 
-and export of structured intensity tables.
+MassLite is a GUI-based Python application for processing **Single Cell Mass Spectrometry (SCMS)** data, designed specifically for datasets acquired without chromatographic separation. It enables advanced peak alignment, biomarker-driven scan grouping, background signal removal, and export of structured intensity tables — all in an intuitive graphical environment.
 
-Please cite the following publication if you are using MassLite: 
-> Zou, Z.; Peng, Z.; Bhusal, D.; Wije Munige, S.; Yang, Z. **MassLite: An Integrated Python Platform for Single Cell Mass Spectrometry Metabolomics Data Pretreatment with Graphical User Interface and Advanced Peak Alignment Method**, _Analytica Chimica Acta_ (2024). [https://doi.org/10.1016/j.aca.2024.343124]
+---
 
+## Citation
 
-Main Functionalities:
-- Read SCMS data from imzML/mzML files
-- Group cell scans by biomarkers
-- Perform peak alignment with ppm-level tolerance without binning
-- Normalize and filter spectra
-- Export scan-wise or cell-wise intensity tables, aligned or unaligned
+If you use MassLite in your research, please cite:
 
-Dependencies:
-- numpy, pandas, matplotlib, seaborn, tkinter, pyimzML, pymzml, umap-learn, sklearn, scipy
+> Zou, Z.; Peng, Z.; Bhusal, D.; Wije Munige, S.; Yang, Z.  
+> **MassLite: An Integrated Python Platform for Single Cell Mass Spectrometry Metabolomics Data Pretreatment with Graphical User Interface and Advanced Peak Alignment Method**.  
+> _Analytica Chimica Acta_ (2024). [https://doi.org/10.1016/j.aca.2024.343124](https://doi.org/10.1016/j.aca.2024.343124)
+
+---
+
+## Key Features
+
+- Load `.imzML` and `.mzML` files in both **profile** and **centroid** mode (profile data is automatically centroided)
+- Group scans by cell-specific biomarkers (e.g., PC(34:1))
+- Perform **binning-free** peak alignment with ppm-level resolution
+- Detect and remove background peaks using scan-wise TIC dynamics
+- Filter and normalize peaks using user-defined thresholds
+- Export results as aligned/unfiltered CSV files (cell-wise or scan-wise)
+
+---
+
+## Dependencies
+
+MassLite is written in **Python 3.11** and requires the following packages:
+
+- `numpy`, `pandas`, `matplotlib`, `seaborn`
+- `tkinter` (GUI framework)
+- `pyimzML`, `pymzml` (data import)
+- `scipy`, `sklearn`, `umap-learn` (analysis and clustering)
 
 Usage:
 -------------
@@ -35,24 +50,26 @@ Detail:
 
 ******
 
-**Void Scan Filter** is designed for improvised SCMS data acquisition process with void scans when data is collected when no meaningful sample is injected. The unsupervised ML method can quickly target the void scans and exclude them in the follow-up analysis. 
+**Void Scan Filter** addresses "void scans" in SCMS experiments when data was acquired without sample injection. MassLite uses unsupervised machine learning (K-means, UMAP) to effectively identify these scans, thus exclude them to improve downstream accuracy.
 
 *****
 
-**Cell Scan Grouper** can automatically trace the source of scans into individual cells by the biomarker specified from user, by default an abundant lipid PC(34:1) commonly observed in cells. The result can be visualized through EIC.
+**Cell Scan Grouper** can automatically detect and segment individual single cells by user-defined biomarker, which can be an abundant lipid PC(34:1) commonly observed in cells by default without specification. The result are visualized through Extracted Ion Chromatograms(EICs).
 
 *****
 
-**Peak Alignment** is done with two advancement. First, the method adopted is binning-free so that peaks are truly comparing among each other regarding their similarity, which is m/z values in this case. The method is independent of order of files and not biased by the position or size of the bins. Second, an algebraic transformation is included to convert absolute mass difference in Da into relative mass difference in ppm. This transformation enabled quick update of the distance matrix for hierarchical clustering when performing peak alignment tasks.
+**Peak Alignment** is implemented with a hierarchical clustering-based approach and two key innovations. First, the method adopted is binning-free to avoid intrinsic drawbacks from traditional binning method. It is independent of order of files and not biased by the position or size of the bins. Second, an algebraic transformation is included to convert absolute mass difference in Dalton into relative mass difference in ppm. This transformation enabled quick update of the distance matrix for hierarchical clustering when performing the peak alignment task.
 
 *****
 
-**Background Detection** is a byproduct of cell scan grouper after alignment. By setting up the threshold, all peaks with their maximum detected among one of the background scans will be redeemed as background signal and can be substantially removed from further analysis. The method is highly effective agains data with a large portion of background scans where background peaks could hardly be all picked out easily, especially useful for SCMS experiment associated with improvised data acquisition process.
+**Background Detection** can be performed along with cell scan grouper after alignment. Peaks with their maximum detected among one of the background scans will be redeemed as background signal and can be substantially removed from further analysis. This is especially useful in noisy or improvised acquisition scenarios.
 
 *****
 
-**Result Filter** and **Exportation** can be done with options to drop specific peaks, with or without peak alignment, in terms of cells or scans. The generated CSV can be used as input for further analysis such as t-test, ANOVA, random forest, etc.
+**Result Filter** and **Exportation** can be done with user-defined parameters. The generated CSV can be used as input for downstream analysis such as t-test, ANOVA, random forest, etc.
 
 License:
 -------------
-MassLite is licensed under Apache-2.0 license. The code is provided as is with no warranty.
+MassLite is licensed under Apache-2.0 license. 
+
+The code is provided as-is, with no warranty.
