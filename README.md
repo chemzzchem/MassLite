@@ -6,14 +6,9 @@ Author: Zhu Zou
 
 Email: xyqzouzhu@gmail.com
 
-Created for Single Cell Mass Spectrometry data pretreatment
-
-Specifically efficient for Single-probe SCMS data
-
 Description:
 -------------
-MassLite is a GUI application for processing mass spectrometry data files 
-(imzML/mzML). It enables peak alignment, cell segmentation, background removal, 
+MassLite is a GUI application for processing mass spectrometry data files, specifically compatible with SCMS data without chromatographic separation. It enables peak alignment, cell segmentation, background removal, 
 and export of structured intensity tables.
 
 Main Functionalities:
