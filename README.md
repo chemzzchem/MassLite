@@ -40,11 +40,11 @@ MassLite is written in **Python 3.11** and requires the following packages:
 - `pyimzML`, `pymzml`
 - `scipy`, `sklearn`, `umap-learn` 
 
-Usage:
+Usage
 -------------
 Download the public Python file and run. Follow the instructions on the GUI. The workflow starts from top to bottom, left to right. The code was generated with Python 3.11 in VSCode environment.
 
-Detail:
+Detail
 -------------
 **File Input** from mzML and imzML formats of data using pymzml and pyimzml package, both in profile and centroid settings. Profile data will be converted into centroid data during the analysis.
 
@@ -68,7 +68,7 @@ Detail:
 
 **Result Filter** and **Exportation** can be done with user-defined parameters. The generated CSV can be used as input for downstream analysis such as t-test, ANOVA, random forest, etc.
 
-License:
+License
 -------------
 MassLite is licensed under Apache-2.0 license. 
 
